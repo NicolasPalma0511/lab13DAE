@@ -11,9 +11,8 @@ COPY requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install -r requirements.txt
 
-# Copia el código de la aplicación y el archivo .env
+# Copia el código de la aplicación
 COPY app.py /app/app.py
-COPY .env /app/.env
 
 # Exponer el puerto 5000
 EXPOSE 5000
