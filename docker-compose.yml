@@ -1,12 +1,14 @@
 version: '3.8'
 services:
   web:
-    image: flask-sql-api:latest
+    build:
+      context: ./flask
+      dockerfile: Dockerfile 
+    ports:
+      - "5000:80" 
     deploy:
       replicas: 3
       resources:
         limits:
           cpus: '0.5'
           memory: 256M
-    ports:
-      - "5000:5000"
