@@ -1,38 +1,21 @@
-# Define a base stage that uses the official python runtime base image
-FROM python:3.11-slim AS base
+# Utiliza una imagen base de Python
+FROM python:3.9-slim
 
-# Install curl and required libraries for pyodbc
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl unixodbc unixodbc-dev libodbc1 odbcinst apt-transport-https gnupg && \
-    # Add the Microsoft repository key and list
-    curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc && \
-    curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/mssql-release.list && \
-    apt-get update && \
-    # Install the Microsoft ODBC Driver for SQL Server
-    ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql17 && \
-    rm -rf /var/lib/apt/lists/*
+# Instala las dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    unixodbc-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set the application directory
-WORKDIR /usr/local/app
+# Copia y instala dependencias de Python
+COPY requirements.txt /app/requirements.txt
+WORKDIR /app
+RUN pip install -r requirements.txt
 
-# Copy requirements and install dependencies
-COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Copia el código de la aplicación
+COPY app.py /app/app.py
 
-# Define a development stage with watchdog installed
-FROM base AS dev
-RUN pip install watchdog
-ENV FLASK_ENV=development
+# Exponer el puerto 5000
+EXPOSE 5000
+
+# Comando para iniciar la aplicación
 CMD ["python", "app.py"]
-
-# Define the final production stage
-FROM base AS final
-
-# Copy the application code
-COPY . .
-
-# Expose port 80
-EXPOSE 80
-
-# Run the application using Gunicorn
-CMD ["gunicorn", "app:app", "-b", "0.0.0.0:80", "--log-file", "-", "--access-logfile", "-", "--workers", "4", "--keep-alive", "0"]
