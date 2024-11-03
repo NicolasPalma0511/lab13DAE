@@ -1,8 +1,9 @@
 # Utiliza una imagen base de Python
 FROM python:3.9-slim
 
-# Instala las dependencias del sistema y el controlador ODBC de SQL Server
+# Instala las dependencias del sistema, incluidos gnupg y el controlador ODBC de SQL Server
 RUN apt-get update && apt-get install -y \
+    gnupg \
     curl \
     apt-transport-https \
     unixodbc-dev
