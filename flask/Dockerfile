@@ -1,17 +1,15 @@
 # Utiliza una imagen base de Python
 FROM python:3.9-slim
 
-# Instala las dependencias del sistema y el controlador ODBC de SQL Server
-RUN apt-get update && apt-get install -y \
-    curl \
-    apt-transport-https \
-    unixodbc-dev
-
-# Agrega la clave pública del repositorio de Microsoft e instala el controlador ODBC
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-    curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl unixodbc unixodbc-dev libodbc1 odbcinst apt-transport-https gnupg && \
+    # Add the Microsoft repository key and list
+    curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc && \
+    curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/mssql-release.list && \
     apt-get update && \
-    ACCEPT_EULA=Y apt-get install -y msodbcsql17
+    # Install the Microsoft ODBC Driver for SQL Server
+    ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql17 && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copia y instala dependencias de Python
 COPY requirements.txt /app/requirements.txt
